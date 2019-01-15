@@ -319,11 +319,14 @@ void set_time(void)
 
 	b = ((RX_array[4] - 48) * 10) + (RX_array[5] - 48);	//actual hours in military time
 	b += 5; //add 5 instead of subtract 7
+	if (b >= 25) b -= 24;
 	if (b >= 13) b -= 12;	//correct for military time
+
 	if (b >= 10)
 		{
-		RX_array[4] = '1';
 		b -= 10;
+		RX_array[4] = '1';
+
 		}
 	else RX_array[4] = 0;
 
