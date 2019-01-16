@@ -362,8 +362,8 @@ void set_time(void)
 			char_pos[a-4] = NINE;
 			break;
 		default:
-			//char_pos[a-4] = 0;
-			char_pos[a-4] = ZERO;
+			char_pos[a-4] = 0;
+			//char_pos[a-4] = ZERO;
 			break;
 		}
 
