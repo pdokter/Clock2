@@ -44,10 +44,12 @@
 #define clk		10
 #define stb		11
 #define oe		12
+#define dst		10	//PC10 for daylight saving switch
 
 #define CLK 		GPIO_PIN_10
 #define STROBE 		GPIO_PIN_11
 #define OutputEn	GPIO_PIN_12
+
 
 #define R0 0
 #define G0 1
@@ -74,6 +76,7 @@ int char_pos[12];
 int line[16];
 int RX_index = 0;
 int comma_count = 0;
+int DST = 5;
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -111,6 +114,10 @@ int main(void)
 	char_pos[4] = FOUR;
 	char_pos[5] = FIVE;
 	char_pos[6] = SIX;
+
+	//check PC10 for DST
+	if (GPIOC->IDR & (1<<dst)) DST = 6;
+	else DST = 5;
 
 	//clear registers
 	//***********************************************************
@@ -303,6 +310,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : PC10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
@@ -314,7 +327,7 @@ void set_time(void)
 
 
 	b = ((RX_array[4] - 48) * 10) + (RX_array[5] - 48);	//actual hours in military time
-	b += 5; //add 5 instead of subtract 7
+	b += DST; //daylight savings
 
 	if (b >= 25) b -= 24;
 	if (b >= 13) b -= 12;	//correct for military time
