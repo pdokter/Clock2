@@ -58,6 +58,9 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+extern char RX_array[10];
+extern int RX_index;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -217,11 +220,29 @@ void SysTick_Handler(void)
   */
 void USART3_IRQHandler(void)
 {
+	char temp_char;
   /* USER CODE BEGIN USART3_IRQn 0 */
 
   /* USER CODE END USART3_IRQn 0 */
   HAL_UART_IRQHandler(&huart3);
   /* USER CODE BEGIN USART3_IRQn 1 */
+
+  if (USART3->ISR & (1<<5))	//read RXNE
+	  {
+	  	  temp_char = USART3->RDR;	//reading RDR resets RXNE
+
+		  if ((temp_char == 'R') | (RX_index >= 1))
+		{
+			RX_array[RX_index] = temp_char;
+			RX_index++;
+			temp_char = 0;
+
+		}
+		  //Apparently you gotta re-enable the interrupt
+		  USART3->CR1 |= (1<<5); //set RXNEIE
+	  }
+
+
 
   /* USER CODE END USART3_IRQn 1 */
 }

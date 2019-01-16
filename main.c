@@ -72,6 +72,7 @@ UART_HandleTypeDef huart3;
 char RX_array[10];
 int char_pos[10];
 int line[16];
+int RX_index = 0;
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,7 +85,7 @@ void set_time(void);
 int main(void)
 {
 	int x = 0, y = 0, z = 0;
-	int RX_index = 0;
+	//int RX_index = 0;
 	int test = 0x55555555;
 	char ABCD = 0;
 
@@ -159,29 +160,20 @@ int main(void)
 			for (z = 0; z < 25; z++);
 			GPIOA->BSRR = (1<<oe);	//set bit 12
 
-			//Check USART3
-			if (USART3->ISR & (1<<5))
+
+			if (RX_index >= 10)
 			{
-				temp_char = USART3->RDR;
+				RX_index = 0;
+				set_time();
+			}
 
-				if ((temp_char == 'R') | (RX_index >= 1))
-				{
-					RX_array[RX_index] = temp_char;
-					RX_index++;
-					temp_char = 0;
-					if (RX_index >= 10)
-					{
-						RX_index = 0;
-						set_time();
-					}
-
-				}
+			//set_time();
 
 				//TX data
 				//USART3->CR1 |= (1<<3);	//set TE
 				//USART3->TDR = temp_char;		//load TX register
 				//HAL_Delay(500);
-			}
+
 
 	  }
 
@@ -263,6 +255,7 @@ static void MX_USART3_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART3_Init 2 */
+  USART3->CR1 |= (1<<5); //set RXNEIE
 
   /* USER CODE END USART3_Init 2 */
 
@@ -317,6 +310,7 @@ void set_time(void)
 	int a = 0;
 	int b = 0;
 
+
 	b = ((RX_array[4] - 48) * 10) + (RX_array[5] - 48);	//actual hours in military time
 	b += 5; //add 5 instead of subtract 7
 
@@ -368,11 +362,13 @@ void set_time(void)
 			char_pos[a-4] = NINE;
 			break;
 		default:
-			char_pos[a-4] = 0;
+			//char_pos[a-4] = 0;
+			char_pos[a-4] = ZERO;
 			break;
 		}
 
 	}
+
 
 	line[0] = (char_pos[0] & (0x0000000F))  | (char_pos[1] & (0x0000000F)) << 5 | (char_pos[2] & (0x0000000F)) << 12
 			| (char_pos[3] & (0x0000000F)) << 17 | (char_pos[4] & (0x0000000F)) << 23 | (char_pos[5] & (0x0000000F)) << 28;
