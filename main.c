@@ -69,10 +69,11 @@
 
 UART_HandleTypeDef huart3;
 
-char RX_array[10];
-int char_pos[10];
+char RX_array[16];	//time and date
+int char_pos[12];
 int line[16];
 int RX_index = 0;
+int comma_count = 0;
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -161,10 +162,11 @@ int main(void)
 			GPIOA->BSRR = (1<<oe);	//set bit 12
 
 
-			if (RX_index >= 10)
+			if (RX_index >= 16)
 			{
 				RX_index = 0;
 				set_time();
+				comma_count = 0;
 			}
 
 			//set_time();
@@ -327,7 +329,7 @@ void set_time(void)
 
 	RX_array[5] = b + 48;
 
-	for (a = 4; a <= 9; a++)
+	for (a = 4; a <= 16; a++)
 	{
 		switch (RX_array[a])
 		{
@@ -396,29 +398,29 @@ void set_time(void)
 
 
 
-	line[8] = (char_pos[0] & (0x0000000F))  | (char_pos[1] & (0x0000000F)) << 5 | (char_pos[2] & (0x0000000F)) << 12
-			| (char_pos[3] & (0x0000000F)) << 17 | (char_pos[4] & (0x0000000F)) << 23 | (char_pos[5] & (0x0000000F)) << 28;
+	line[8] = (char_pos[6] & (0x0000000F))  | (char_pos[7] & (0x0000000F)) << 5 | (char_pos[8] & (0x0000000F)) << 12
+			| (char_pos[9] & (0x0000000F)) << 17 | (char_pos[10] & (0x0000000F)) << 23 | (char_pos[11] & (0x0000000F)) << 28;
 
-	line[9] = ((char_pos[0] & (0x000000F0)) >> 4) | (char_pos[1] & (0x000000F0)) << 1 | (char_pos[2] & (0x000000F0)) << 8
-			| (char_pos[3] & (0x000000F0)) << 13 | (char_pos[4] & (0x000000F0)) << 19 | (char_pos[5] & (0x000000F0)) << 24;
+	line[9] = ((char_pos[6] & (0x000000F0)) >> 4) | (char_pos[7] & (0x000000F0)) << 1 | (char_pos[8] & (0x000000F0)) << 8
+			| (char_pos[9] & (0x000000F0)) << 13 | (char_pos[10] & (0x000000F0)) << 19 | (char_pos[11] & (0x000000F0)) << 24;
 
-	line[10] = ((char_pos[0] & (0x00000F00)) >> 8) | (char_pos[1] & (0x00000F00)) >> 3 | (char_pos[2] & (0x00000F00)) << 4
-			| (char_pos[3] & (0x00000F00)) << 9 | (char_pos[4] & (0x00000F00)) << 15 | (char_pos[5] & (0x00000F00)) << 20;
+	line[10] = ((char_pos[6] & (0x00000F00)) >> 8) | (char_pos[7] & (0x00000F00)) >> 3 | (char_pos[8] & (0x00000F00)) << 4
+			| (char_pos[9] & (0x00000F00)) << 9 | (char_pos[10] & (0x00000F00)) << 15 | (char_pos[11] & (0x00000F00)) << 20;
 
-	line[11] = ((char_pos[0] & (0x0000F000)) >> 12) | (char_pos[1] & (0x0000F000)) >> 7 | (char_pos[2] & (0x0000F000))
-			| (char_pos[3] & (0x0000F000)) << 5 | (char_pos[4] & (0x0000F000)) << 11 | (char_pos[5] & (0x0000F000)) << 16;
+	line[11] = ((char_pos[6] & (0x0000F000)) >> 12) | (char_pos[7] & (0x0000F000)) >> 7 | (char_pos[8] & (0x0000F000))
+			| (char_pos[9] & (0x0000F000)) << 5 | (char_pos[10] & (0x0000F000)) << 11 | (char_pos[11] & (0x0000F000)) << 16;
 
-	line[12] = ((char_pos[0] & (0x000F0000)) >> 16) | (char_pos[1] & (0x000F0000)) >> 11 | (char_pos[2] & (0x000F0000)) >> 4
-			| (char_pos[3] & (0x000F0000)) << 1 | (char_pos[4] & (0x000F0000)) << 7  | (char_pos[5] & (0x000F0000)) << 12;
+	line[12] = ((char_pos[6] & (0x000F0000)) >> 16) | (char_pos[7] & (0x000F0000)) >> 11 | (char_pos[8] & (0x000F0000)) >> 4
+			| (char_pos[9] & (0x000F0000)) << 1 | (char_pos[10] & (0x000F0000)) << 7  | (char_pos[11] & (0x000F0000)) << 12;
 
-	line[13] = ((char_pos[0] & (0x00F00000)) >> 20) | (char_pos[1] & (0x00F00000)) >> 15 | (char_pos[2] & (0x00F00000)) >> 8
-			| (char_pos[3] & (0x00F00000)) >> 3 | (char_pos[4] & (0x00F00000)) << 3| (char_pos[5] & (0x00F00000)) << 8;
+	line[13] = ((char_pos[6] & (0x00F00000)) >> 20) | (char_pos[7] & (0x00F00000)) >> 15 | (char_pos[8] & (0x00F00000)) >> 8
+			| (char_pos[9] & (0x00F00000)) >> 3 | (char_pos[10] & (0x00F00000)) << 3| (char_pos[11] & (0x00F00000)) << 8;
 
-	line[14] = ((char_pos[0] & (0x0F000000)) >> 24) | (char_pos[1] & (0x0F000000)) >> 19 | (char_pos[2] & (0x0F000000)) >> 12
-			| (char_pos[3] & (0x0F000000)) >> 7 | (char_pos[4] & (0x0F000000)) >> 1 | (char_pos[5] & (0x0F000000)) << 4;
+	line[14] = ((char_pos[6] & (0x0F000000)) >> 24) | (char_pos[7] & (0x0F000000)) >> 19 | (char_pos[8] & (0x0F000000)) >> 12
+			| (char_pos[9] & (0x0F000000)) >> 7 | (char_pos[10] & (0x0F000000)) >> 1 | (char_pos[11] & (0x0F000000)) << 4;
 
-	line[15] = ((char_pos[0] & (0xF0000000)) >> 28) | (char_pos[1] & (0xF0000000)) >> 23 | (char_pos[2] & (0xF0000000)) >> 16
-			| (char_pos[3] & (0xF0000000)) >> 11 | (char_pos[4] & (0xF0000000)) >> 5 | (char_pos[5] & (0xF0000000)) << 1;
+	line[15] = ((char_pos[6] & (0xF0000000)) >> 28) | (char_pos[7] & (0xF0000000)) >> 23 | (char_pos[8] & (0xF0000000)) >> 16
+			| (char_pos[9] & (0xF0000000)) >> 11 | (char_pos[10] & (0xF0000000)) >> 5 | (char_pos[11] & (0xF0000000)) << 1;
 
 }
 

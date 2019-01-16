@@ -60,6 +60,7 @@
 
 extern char RX_array[10];
 extern int RX_index;
+extern int comma_count;
 
 /* USER CODE END PV */
 
@@ -220,7 +221,7 @@ void SysTick_Handler(void)
   */
 void USART3_IRQHandler(void)
 {
-	char temp_char;
+	char temp_char = 0;
   /* USER CODE BEGIN USART3_IRQn 0 */
 
   /* USER CODE END USART3_IRQn 0 */
@@ -231,11 +232,27 @@ void USART3_IRQHandler(void)
 	  {
 	  	  temp_char = USART3->RDR;	//reading RDR resets RXNE
 
-		  if ((temp_char == 'R') | (RX_index >= 1))
-		{
-			RX_array[RX_index] = temp_char;
-			RX_index++;
-			temp_char = 0;
+	  	  //watch for RMC sentence
+		  if ((temp_char == 'R') | (RX_index >= 1))	//get time
+		 {
+			if (RX_index <= 9)
+			{
+				RX_array[RX_index] = temp_char;
+				RX_index++;
+
+			}
+
+			else if (RX_index >= 10)	//get date
+			{
+				if (comma_count >= 8)
+				{
+					RX_array[RX_index] = temp_char;
+					RX_index++;
+				}
+
+				else if (temp_char == ',') comma_count++;
+
+			}
 
 		}
 		  //Apparently you gotta re-enable the interrupt
