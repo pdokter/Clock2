@@ -76,7 +76,7 @@ int char_pos[12];
 int line[16];
 int RX_index = 0;
 int comma_count = 0;
-int DST = 5;
+int DST = 5; //DST the time shift from GMT to MST, also augmented for daylight savings through a switch on PC10
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -324,10 +324,18 @@ void set_time(void)
 {
 	int a = 0;
 	int b = 0;
+	int date = 0;
 
 
 	b = ((RX_array[4] - 48) * 10) + (RX_array[5] - 48);	//actual hours in military time
 	b += DST; //daylight savings
+
+	//correct for GMT date change screwiness
+	date = ((RX_array[10] - 48) * 10) + (RX_array[11] - 48);
+	if (b >= DST) date -= 1;
+	//date -= 1;
+	RX_array[10] = (date / 10) + 48;
+	RX_array[11] = (date % 10) + 48;
 
 	if (b >= 25) b -= 24;
 	if (b >= 13) b -= 12;	//correct for military time
