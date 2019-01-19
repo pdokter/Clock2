@@ -338,7 +338,7 @@ void set_time(void)
 
 	//correct for GMT date change screwiness
 	date = ((RX_array[10] - 48) * 10) + (RX_array[11] - 48);
-	if ((b >= DST) & (b < 2*DST)) date -= 1;
+	if ((b >= DST) & (b < 12)) date -= 1;
 	//date -= 1;
 	RX_array[10] = (date / 10) + 48;
 	RX_array[11] = (date % 10) + 48;
