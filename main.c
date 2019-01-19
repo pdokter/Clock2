@@ -105,8 +105,6 @@ int main(void)
 	MX_GPIO_Init();
 	MX_USART3_UART_Init();
 
-	USART3->CR1 |= (1<<2);		//set RE, enable USART3 RX
-
 	char_pos[0] = ZERO;
 	char_pos[1] = ONE;
 	char_pos[2] = TWO;
@@ -116,8 +114,8 @@ int main(void)
 	char_pos[6] = SIX;
 
 	//check PC10 for DST
-	if (GPIOC->IDR & (1<<dst)) DST = 6;
-	else DST = 5;
+	//if (GPIOC->IDR & (1<<dst)) DST = 6;
+	//else DST = 5;
 
 	//clear registers
 	//***********************************************************
@@ -130,6 +128,9 @@ int main(void)
 	GPIOA->ODR ^= STROBE;
 	GPIOA->ODR ^= STROBE;
 	//***********************************************************
+
+	USART3->CR1 |= (1<<2);		//set RE, enable USART3 RX
+	USART3->CR1 |= (1<<5); //set RXNEIE
 
   while (1)
   {
@@ -264,7 +265,7 @@ static void MX_USART3_UART_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN USART3_Init 2 */
-  USART3->CR1 |= (1<<5); //set RXNEIE
+  //USART3->CR1 |= (1<<5); //set RXNEIE
 
   /* USER CODE END USART3_Init 2 */
 
@@ -325,17 +326,30 @@ void set_time(void)
 	int a = 0;
 	int b = 0;
 	int date = 0;
+	char temp1;
+	char temp2;
 
+	//check PC10 for DST
+	if (GPIOC->IDR & (1<<dst)) DST = 6;
+	else DST = 5;
 
 	b = ((RX_array[4] - 48) * 10) + (RX_array[5] - 48);	//actual hours in military time
 	b += DST; //daylight savings
 
 	//correct for GMT date change screwiness
 	date = ((RX_array[10] - 48) * 10) + (RX_array[11] - 48);
-	if (b >= DST) date -= 1;
+	if ((b >= DST) & (b < 2*DST)) date -= 1;
 	//date -= 1;
 	RX_array[10] = (date / 10) + 48;
 	RX_array[11] = (date % 10) + 48;
+
+	//rearrange date field cuz it confuses Americans
+	temp1 = RX_array[12];
+	temp2 = RX_array[13];
+	RX_array[12] = RX_array[10];
+	RX_array[13] = RX_array[11];
+	RX_array[10] = temp1;
+	RX_array[11] = temp2;
 
 	if (b >= 25) b -= 24;
 	if (b >= 13) b -= 12;	//correct for military time
